@@ -1,0 +1,80 @@
+from aiogram import Dispatcher, F
+from aiogram.types import Message, ReplyKeyboardMarkup, KeyboardButton, ReplyKeyboardRemove
+from aiogram.filters import CommandStart, Command
+from aiogram.fsm.context import FSMContext
+from aiogram.fsm.state import State, StatesGroup
+
+dp = Dispatcher()
+
+class JobSearchForm(StatesGroup):
+    entering_job_title = State()
+    entering_city = State()
+    entering_salary_range = State()
+
+
+start_keyboard = ReplyKeyboardMarkup(
+    keyboard=[
+        [KeyboardButton(text="Старт"), KeyboardButton(text="Описание")],
+        [KeyboardButton(text="Помощь")]
+    ],
+    resize_keyboard=True,
+    one_time_keyboard=True
+)
+
+
+role_keyboard = ReplyKeyboardMarkup(
+    keyboard=[
+        [KeyboardButton(text="Соискатель"), KeyboardButton(text="Работодатель")]
+    ],
+    resize_keyboard=True,
+    one_time_keyboard=True
+)
+
+
+job_search_keyboard = ReplyKeyboardMarkup(
+    keyboard=[
+        [KeyboardButton(text="Название профессии")]
+    ],
+    resize_keyboard=True,
+    one_time_keyboard=True
+)
+
+@dp.message(CommandStart())
+async def cmd_start(message: Message):
+    await message.answer('Добро пожаловать! Выберите опцию:', reply_markup=start_keyboard)
+
+@dp.message(Command('description'))
+async def cmd_description(message: Message):
+    await message.answer('Этот бот помогает управлять вашими задачами.')
+
+@dp.message(Command('help'))
+async def cmd_help(message: Message):
+    await message.answer('Если у вас возникли вопросы, пожалуйста, свяжитесь с нашей поддержкой.')
+
+@dp.message(F.text == "Старт")
+async def cmd_start_role(message: Message):
+    await message.answer('Кто вы?', reply_markup=role_keyboard)
+
+@dp.message(F.text == "Соискатель")
+async def cmd_job_search(message: Message, state: FSMContext):
+    await message.answer('Поиск вакансий на hh.ru\nВыберите все опции по очереди', reply_markup=job_search_keyboard)
+    await state.set_state(JobSearchForm.entering_job_title)
+
+@dp.message(F.text == "Название профессии", JobSearchForm.entering_job_title)
+async def cmd_enter_job_title(message: Message, state: FSMContext):
+    await message.answer('Введите название работы', reply_markup=ReplyKeyboardRemove())
+    await state.set_state(JobSearchForm.entering_city)
+
+@dp.message(JobSearchForm.entering_city)
+async def cmd_enter_city(message: Message, state: FSMContext):
+    await message.answer('Введите название города')
+    await state.set_state(JobSearchForm.entering_salary_range)
+
+@dp.message(JobSearchForm.entering_salary_range)
+async def cmd_enter_salary_range(message: Message, state: FSMContext):
+    await message.answer('Укажите диапазон заработной платы')
+    await state.clear()
+
+@dp.message(F.text & ~F.command)
+async def any_message(message: Message):
+    await message.answer('Бот запускается командой /start')
