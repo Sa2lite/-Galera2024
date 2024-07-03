@@ -180,7 +180,12 @@ async def process_callback_show_vacancies(callback_query: types.CallbackQuery, s
             vacancies_text += f"Информация о занятости: {vacancy[5]}\n"
             vacancies_text += f"Количество просматривающих: {vacancy[6]}\n"
             vacancies_text += f"Ссылка для отклика: {vacancy[7]}\n\n"
-        await bot.send_message(callback_query.from_user.id, f'Найдены вакансии:\n{vacancies_text}')
+        
+        chunk_size = 4000
+        chunks = [vacancies_text[i:i + chunk_size] for i in range(0, len(vacancies_text), chunk_size)]
+        
+        for chunk in chunks:
+            await bot.send_message(callback_query.from_user.id, chunk)
     else:
         keyboard = InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text="Нажмите чтобы начать парсинг", callback_data="start_parsing")]])
         await bot.send_message(callback_query.from_user.id, 'Вакансии не найдены.', reply_markup=keyboard)
