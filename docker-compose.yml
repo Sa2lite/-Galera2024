@@ -1,0 +1,10 @@
+version: '3.8'
+
+services:
+  bot:
+    build: .
+    volumes:
+      - .:/app
+      - ./db:/app/db  
+    environment:
+      - API_TOKEN=7396063867:AAHT-46Dwu1Aa1NQJcFurr_XzpKY5w1uzCk
