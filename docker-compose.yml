@@ -5,6 +5,19 @@ services:
     build: .
     volumes:
       - .:/app
-      - ./db:/app/db  
     environment:
       - API_TOKEN=7396063867:AAHT-46Dwu1Aa1NQJcFurr_XzpKY5w1uzCk
+    depends_on:
+      - db
+
+  db:
+    image: postgres:13
+    environment:
+      - POSTGRES_DB=vacancies_and_resumes
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=77906
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
