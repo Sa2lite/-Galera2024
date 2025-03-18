@@ -3,6 +3,7 @@ import requests
 from bs4 import BeautifulSoup
 from database import *
 
+parsing_active = False
 
 def parse_vacancies(url, parsing_active):
     headers = {
