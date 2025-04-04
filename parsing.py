@@ -1,24 +1,18 @@
 import requests
 from bs4 import BeautifulSoup
-from fake_useragent import UserAgent
 from database import db_connection, insert_vacancy
 
-# Инициализация генератора User-Agent
-ua = UserAgent()
-
+HEADERS = {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'
+}
 BASE_HH_URL = "https://hh.ru"
 
-def fetch_page(url):
-    # Генерация случайного User-Agent для каждого запроса
-    headers = {
-        'User-Agent': ua.random
-    }
-    try:
-        response = requests.get(url, headers=headers)
-        response.raise_for_status()  # Проверка на ошибки HTTP
+def fetch_page(url, headers=HEADERS):
+    response = requests.get(url, headers=headers)
+    if response.status_code == 200:
         return response.text
-    except requests.exceptions.RequestException as e:
-        print(f"Failed to retrieve {url}. Error: {e}")
+    else:
+        print(f"Failed to retrieve {url}. Status code: {response.status_code}")
         return None
 
 def parse_vacancies(url, parsing_active):
@@ -27,11 +21,16 @@ def parse_vacancies(url, parsing_active):
         return
 
     soup = BeautifulSoup(page_content, 'html.parser')
-    vacancies = soup.find_all('a', class_='bloko-link')
+    # Измененный селектор для поиска вакансий
+    vacancies = soup.find_all('a', {'data-qa': 'serp-item__title'})
+    
     for vacancy in vacancies:
-        link = vacancy.get('href', '')
+        link = vacancy['href']
         if 'vacancy' in link:
             full_link = f"{BASE_HH_URL}{link}" if link.startswith('/') else link
+            title = vacancy.find('span', {'data-qa': 'serp-item__title-text'})
+            if title:
+                print(f"Found vacancy: {title.text.strip()} - {full_link}")
             parse_vacancy_details(full_link, parsing_active)
 
 def parse_vacancy_details(vacancy_url, parsing_active):
@@ -89,7 +88,7 @@ def get_resumes(query, start_page, end_page, parsing_active):
             "search_period": "0",
             "page": page
         }
-        page_content = fetch_page(base_url, params=params)
+        page_content = fetch_page(base_url, headers=HEADERS, params=params)
         if not page_content:
             continue
 
