@@ -1,11 +1,12 @@
 import sqlite3
+import os
 from contextlib import contextmanager
 
-DATABASE_NAME = 'vacancies_and_resumes.sql'
+DB_PATH = os.path.join(os.path.dirname(__file__), '../db/vacancies.db')
 
 @contextmanager
 def db_connection():
-    conn = sqlite3.connect(DATABASE_NAME)
+    conn = sqlite3.connect(DB_PATH)
     try:
         cursor = conn.cursor()
         yield cursor
