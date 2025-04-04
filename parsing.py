@@ -7,12 +7,16 @@ HEADERS = {
 }
 BASE_HH_URL = "https://hh.ru"
 
-def fetch_page(url, headers=HEADERS):
-    response = requests.get(url, headers=headers)
-    if response.status_code == 200:
-        return response.text
-    else:
-        print(f"Failed to retrieve {url}. Status code: {response.status_code}")
+def fetch_page(url, headers=HEADERS, params=None):
+    try:
+        response = requests.get(url, headers=headers, params=params)
+        if response.status_code == 200:
+            return response.text
+        else:
+            print(f"Failed to retrieve {url}. Status code: {response.status_code}")
+            return None
+    except requests.exceptions.RequestException as e:
+        print(f"Request failed for {url}: {e}")
         return None
 
 def parse_vacancies(url, parsing_active):
@@ -21,7 +25,6 @@ def parse_vacancies(url, parsing_active):
         return
 
     soup = BeautifulSoup(page_content, 'html.parser')
-    # Измененный селектор для поиска вакансий
     vacancies = soup.find_all('a', {'data-qa': 'serp-item__title'})
     
     for vacancy in vacancies:

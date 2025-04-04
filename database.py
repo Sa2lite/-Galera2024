@@ -77,13 +77,20 @@ def get_all_resumes():
         return cursor.fetchall()
 
 def get_resumes_by_params(params):
+    column_mapping = {
+        'title': 'job_title',
+    }
+    
     with db_connection() as cursor:
         query = "SELECT * FROM resumes WHERE 1=1"
         query_params = []
+        
         for key, value in params.items():
             if key not in ['resumes_per_page', 'current_resume_index'] and value:
-                query += f" AND {key} LIKE ?"
+                db_column = column_mapping.get(key, key)
+                query += f" AND {db_column} LIKE ?"
                 query_params.append(f"%{value}%")
+                
         cursor.execute(query, query_params)
         return cursor.fetchall()
 
