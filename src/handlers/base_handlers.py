@@ -1,12 +1,5 @@
-import asyncio
-import concurrent.futures
-import logging
-import sqlite3
-import requests
-from bs4 import BeautifulSoup
-from aiogram import Bot, Dispatcher, types, Router
+from aiogram import Bot, types, Router
 from aiogram.filters import Command
-from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMarkup, InlineKeyboardButton
 from database import *
